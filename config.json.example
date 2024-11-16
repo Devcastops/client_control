@@ -1,0 +1,20 @@
+{
+  "packer": {
+    "organizationID": "",
+    "projectID": "",
+    "bucketName": ""
+  },
+  "gcp": {
+    "project": "",
+    "compute": {
+      "zone": "",
+      "serviceAccount": "",
+      "subnetwork": "",
+      "diskSize": 20
+    }
+  },
+ "nomad":{
+    "serverIPs": [""]
+ },
+  "webhook": {}
+}
