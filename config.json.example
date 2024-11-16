@@ -16,5 +16,7 @@
  "nomad":{
     "serverIPs": [""]
  },
-  "webhook": {}
+  "webhook": {
+    "url": ""
+  }
 }

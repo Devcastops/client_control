@@ -26,4 +26,6 @@ type GCPCompute struct {
 type Nomad struct {
 	ServerIPs []string `json:"serverIPs"`
 }
-type Webhook struct{}
+type Webhook struct {
+	Url string `json:"url"`
+}
