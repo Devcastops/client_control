@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/devcastops/client_control/cloudflare"
 	"github.com/devcastops/client_control/config"
 	"github.com/devcastops/client_control/gcp"
 	"github.com/devcastops/client_control/packer"
+	"github.com/devcastops/client_control/webhook"
 	"github.com/spf13/cobra"
 )
 
@@ -53,7 +55,9 @@ func startGCP(params StartParams, config config.Config) error {
 		return err
 	}
 
-	err = gcp.CreateClient(config.GCP.Project).CreateStartInstance(
+	client := gcp.CreateClient(config.GCP.Project)
+
+	err = client.CreateStartInstance(
 		config.GCP.Compute.Zone,
 		"IPV4_IPV6",
 		params.machine_type,
@@ -88,5 +92,16 @@ systemctl restart nomad
 	if err != nil {
 		return err
 	}
+
+	info, err := client.CreateGetInstance(config.GCP.Compute.Zone).GetInstance(params.Name)
+	if err != nil {
+		return err
+	}
+	err = cloudflare.UpdateDNS(config, params.Name, *info.NetworkInterfaces[0].NetworkIP)
+	if err != nil {
+		return err
+	}
+	webhook.SendMessage(config.Webhook.Url, fmt.Sprintf("Started instance:\nname: %s\nnode pool: %s\nIP: %s", params.Name, params.node_pool, *info.NetworkInterfaces[0].NetworkIP))
+
 	return nil
 }

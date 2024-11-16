@@ -1,10 +1,11 @@
 package config
 
 type Config struct {
-	Packer  Packer  `json:"packer"`
-	GCP     GCP     `json:"gcp"`
-	Nomad   Nomad   `json:"nomad"`
-	Webhook Webhook `json:"webhook"`
+	Packer     Packer     `json:"packer"`
+	GCP        GCP        `json:"gcp"`
+	Nomad      Nomad      `json:"nomad"`
+	Webhook    Webhook    `json:"webhook"`
+	Cloudflare Cloudflare `json:"cloudflare"`
 }
 
 type Packer struct {
@@ -28,4 +29,7 @@ type Nomad struct {
 }
 type Webhook struct {
 	Url string `json:"url"`
+}
+type Cloudflare struct {
+	ZoneId string `json:"zoneId"`
 }

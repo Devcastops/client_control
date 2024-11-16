@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/devcastops/client_control/config"
+	"github.com/devcastops/client_control/webhook"
 	"github.com/spf13/cobra"
 )
 
@@ -14,8 +15,8 @@ var rootCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		out, err := config.Load("config.json")
-		fmt.Println(out)
+		config, err := config.Load("config.json")
+		fmt.Println(config)
 		return err
 	},
 }
@@ -25,6 +26,8 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
+		config, _ := config.Load("config.json")
+		webhook.SendMessage(config.Webhook.Url, err.Error())
 		os.Exit(1)
 	}
 }

@@ -18,5 +18,8 @@
  },
   "webhook": {
     "url": ""
+  },
+  "cloudflare":{
+    "zoneId" : ""
   }
 }

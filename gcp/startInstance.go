@@ -48,16 +48,6 @@ func (opts *StartInstance) StartInstance(image, name string) error {
 
 	trueobj := true
 
-	// labels := map[string]string{
-	// 	"department": "test",
-	// }
-
-	// startupScriptKey := "startup-script"
-	// startupScript := fmt.Sprintf(`
-	// #! /bin/bash echo '{"client":{"node_pool":"{{ env "NOMAD_META_node_pool" }}"}}' | jq -rM '.'>/etc/nomad.d/node_pool.hcl
-	// echo '{"client":{"servers": ["10.2.0.6"], "artifact":{"decompression_file_count_limit":0}}}' | jq -rM '.'>/etc/nomad.d/client_build.hcl
-	// systemctl restart nomad
-	// `)
 	metadata := []*computepb.Items{}
 	for k, v := range opts.Metadata {
 		metadata = append(metadata, &computepb.Items{Key: &k, Value: &v})
@@ -94,10 +84,11 @@ func (opts *StartInstance) StartInstance(image, name string) error {
 			Metadata:               &computepb.Metadata{Items: metadata},
 		},
 	}
-	_, err = c.Insert(ctx, &opt)
+	res, err := c.Insert(ctx, &opt)
 	if err != nil {
 		return err
 	}
+	res.Wait(ctx)
 	fmt.Println("Created")
 	return nil
 }
