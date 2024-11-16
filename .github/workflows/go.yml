@@ -35,4 +35,4 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          *.go
+          ./client_control/client_control
