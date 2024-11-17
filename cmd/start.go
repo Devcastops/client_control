@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/devcastops/client_control/cloudflare"
+	"github.com/devcastops/client_control/common"
 	"github.com/devcastops/client_control/config"
 	"github.com/devcastops/client_control/gcp"
 	"github.com/devcastops/client_control/packer"
@@ -37,22 +38,32 @@ func start(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	var info *common.Instance
 	switch params.provider {
 	case "GCP":
-		err = startGCP(params, config)
+		info, err = startGCP(params, config)
 		if err != nil {
 			return err
 		}
+	}
+	err = cloudflare.UpdateDNS(config, info.Name, info.Ip)
+	if err != nil {
+		return err
+	}
+	err = webhook.SendMessage(config.Webhook.Url, fmt.Sprintf("Started instance:\nName: %s\nNode pool: %s\nIP: %s", params.Name, params.node_pool, info.Ip))
+
+	if err != nil {
+		return err
 	}
 
 	return nil
 
 }
 
-func startGCP(params StartParams, config config.Config) error {
+func startGCP(params StartParams, config config.Config) (*common.Instance, error) {
 	image, err := packer.GetPackerImageGCP(params.packer_channel, config)
 	if err != nil {
-		return err
+		return &common.Instance{}, err
 	}
 
 	client := gcp.CreateClient(config.GCP.Project)
@@ -90,18 +101,9 @@ systemctl restart nomad
 		},
 	).StartInstance(image, params.Name)
 	if err != nil {
-		return err
+		return &common.Instance{}, err
 	}
 
-	info, err := client.CreateGetInstance(config.GCP.Compute.Zone).GetInstance(params.Name)
-	if err != nil {
-		return err
-	}
-	err = cloudflare.UpdateDNS(config, params.Name, *info.NetworkInterfaces[0].NetworkIP)
-	if err != nil {
-		return err
-	}
-	webhook.SendMessage(config.Webhook.Url, fmt.Sprintf("Started instance:\nname: %s\nnode pool: %s\nIP: %s", params.Name, params.node_pool, *info.NetworkInterfaces[0].NetworkIP))
+	return client.CreateGetInstance(config.GCP.Compute.Zone).GetInstance(params.Name)
 
-	return nil
 }

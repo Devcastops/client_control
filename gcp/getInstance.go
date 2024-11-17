@@ -6,6 +6,7 @@ import (
 
 	compute "cloud.google.com/go/compute/apiv1"
 	"cloud.google.com/go/compute/apiv1/computepb"
+	"github.com/devcastops/client_control/common"
 )
 
 func (client *Client) CreateGetInstance(Zone string) *GetInstance {
@@ -16,13 +17,13 @@ func (client *Client) CreateGetInstance(Zone string) *GetInstance {
 	return start
 }
 
-func (opts *GetInstance) GetInstance(name string) (*computepb.Instance, error) {
+func (opts *GetInstance) GetInstance(name string) (*common.Instance, error) {
 	fmt.Printf("GetInstance: %s\n", name)
 	ctx := context.Background()
 
 	c, err := compute.NewInstancesRESTClient(ctx)
 	if err != nil {
-		return &computepb.Instance{}, err
+		return &common.Instance{}, err
 	}
 	defer c.Close()
 
@@ -32,8 +33,11 @@ func (opts *GetInstance) GetInstance(name string) (*computepb.Instance, error) {
 		Instance: name,
 	})
 	if err != nil {
-		return &computepb.Instance{}, err
+		return &common.Instance{}, err
 	}
 	// fmt.Println(res)
-	return res, nil
+	return &common.Instance{
+		Ip:   *res.NetworkInterfaces[0].NetworkIP,
+		Name: name,
+	}, nil
 }
