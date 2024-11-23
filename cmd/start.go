@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/devcastops/client_control/cloudflare"
@@ -68,6 +69,8 @@ func startGCP(params StartParams, config config.Config) (*common.Instance, error
 
 	client := gcp.CreateClient(config.GCP.Project)
 
+	serverIps, err := json.Marshal(config.Nomad.ServerIPs)
+
 	err = client.CreateStartInstance(
 		config.GCP.Compute.Zone,
 		"IPV4_IPV6",
@@ -96,7 +99,7 @@ func startGCP(params StartParams, config config.Config) (*common.Instance, error
 echo '{"client":{"node_pool":"%s"}}' | jq -rM '.'>/etc/nomad.d/node_pool.hcl
 echo '{"client":{"servers": %s, "artifact":{"decompression_file_count_limit":0}}}' | jq -rM '.'>/etc/nomad.d/client_build.hcl
 systemctl restart nomad
-      `, params.node_pool, config.Nomad.ServerIPs),
+      `, params.node_pool, serverIps),
 			"enable-oslogin": "TRUE",
 		},
 	).StartInstance(image, params.Name)
