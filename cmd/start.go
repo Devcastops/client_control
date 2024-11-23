@@ -70,7 +70,9 @@ func startGCP(params StartParams, config config.Config) (*common.Instance, error
 	client := gcp.CreateClient(config.GCP.Project)
 
 	serverIps, err := json.Marshal(config.Nomad.ServerIPs)
-
+	if err != nil {
+		return &common.Instance{}, err
+	}
 	err = client.CreateStartInstance(
 		config.GCP.Compute.Zone,
 		"IPV4_IPV6",
